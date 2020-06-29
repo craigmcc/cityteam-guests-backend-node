@@ -16,7 +16,7 @@ exports.delete = (req, res) => {
         .then(num => {
             if (num == 1) {
                 res.status(200).send({
-                    message: "Successful delete"
+                    message: "Facility: Successful delete"
                 });
             } else {
                 res.status(404).send({
@@ -25,7 +25,7 @@ exports.delete = (req, res) => {
             }
         })
         .catch(err => {
-            console.log("Facility.delete() error: " + JSON.stringify(err));
+            console.error("Facility.delete() error: ", err);
             res.status(500).send({
                 message: err.message || "Error deleting facility"
             });
@@ -42,11 +42,11 @@ exports.deleteAll = (req, res) => {
     })
         .then(num => {
             res.status(200).send({
-                message: `${num} facilities were deleted successfully`
+                message: `Facility: ${num} facilities were deleted successfully`
             });
         })
         .catch(err => {
-            console.log("Facility.deleteAll() error: " + JSON.stringify(err));
+            console.error("Facility.deleteAll() error: ", err);
             res.status(500).send({
                 message: err.message || "Error deleting all facilities"
             });
@@ -65,7 +65,7 @@ exports.findAll = (req, res) => {
             res.send(data);
         })
         .catch(err => {
-            console.log("Facility.findAll() error: " + JSON.stringify(err));
+            console.error("Facility.findAll() error: ", err);
             res.status(500).send({
                 message: err.message || "Error retrieving facilities"
             });
@@ -89,7 +89,7 @@ exports.findOne = (req, res) => {
             }
         })
         .catch(err => {
-            console.log("Facility.findOne() error: " + JSON.stringify(err));
+            console.error("Facility.findOne() error: ", err);
             res.status(500).send({
                 message: err.message || "Error finding one facility"
             });
@@ -117,7 +117,7 @@ exports.insert = (req, res) => {
             res.status(201).send(data);
         })
         .catch(err => {
-            console.log("Facility.insert() error: " + JSON.stringify(err));
+            console.error("Facility.insert() error: ", err);
             res.status(500).send({
                 message: err.message || "Error creating the facility"
             });
@@ -146,9 +146,16 @@ exports.update = (req, res) => {
     })
         .then(num => {
             if (num == 1) {
-                res.send({
-                    message: "Successful update"
-                });
+                Facility.findByPk(id)
+                    .then(data => {
+                        if (data === null) {
+                            res.status(404).send({
+                                message: "id: No such facility with id " + id
+                            });
+                        } else {
+                            res.send(data);
+                        }
+                    });
             } else {
                 res.status(404).send({
                     message: "id: Missing facility " + id
@@ -156,7 +163,7 @@ exports.update = (req, res) => {
             }
         })
         .catch(err => {
-            console.log("Facility.update() error: " + JSON.stringify(err));
+            console.error("Facility.update() error: ", err);
             res.status(500).send({
                 message: err.message || "Error updating the facility"
             });
@@ -166,6 +173,14 @@ exports.update = (req, res) => {
 
 // Support Methods -----------------------------------------------------------
 
+/**
+ * <p>Populate and return a Facility object from the contents of the
+ * specified request body.</p>
+ *
+ * @param req Request being processed
+ *
+ * @returns JavaScript object with relevant fields from the request body
+ */
 function populate(req) {
     const facility = {
         name : req.body.name,
