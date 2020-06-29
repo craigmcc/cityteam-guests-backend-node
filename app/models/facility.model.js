@@ -1,33 +1,43 @@
 // Define the Facility model
-module.exports = (sequelize, Sequelize) => {
 
-    const Facility = sequelize.define("facility", {
+const { Sequelize, DataTypes, Model } = require('sequelize');
+
+module.exports = (sequelize) => {
+
+    class Facility extends Model {};
+
+    Facility.init({
 
         name: {
             allowNull: false,
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             unique: true
         },
 
         address1: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
 
         address2: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
 
         city: {
-            type: Sequelize.STRING
+            type: DataTypes.STRING
         },
 
         state: {
-            type: Sequelize.STRING(2)
+            type: DataTypes.STRING(2)
         },
 
         zipCode: {
-            type: Sequelize.STRING(10)
+            type: DataTypes.STRING(10)
         }
+
+    }, {
+
+        modelName: "facility",
+        sequelize
 
     });
 

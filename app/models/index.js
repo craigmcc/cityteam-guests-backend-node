@@ -18,7 +18,8 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Configure models
-db.facilities = require("./facility.model.js")(sequelize, Sequelize);
+//db.facilities = require("./facility.model.js")(sequelize, Sequelize);
+db.facilities = require("./facility.model.js")(sequelize);
 
 // Export database interface
 module.exports = db;
