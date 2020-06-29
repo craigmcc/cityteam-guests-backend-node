@@ -138,8 +138,11 @@ exports.update = (req, res) => {
     }
 
     // Update the existing model in the database
+
+    const id = req.params.id;
+
     Facility.update(populate(req), {
-        where: {id: req.param.id }
+        where: {id: id }
     })
         .then(num => {
             if (num == 1) {
