@@ -11,7 +11,23 @@ module.exports = (sequelize) => {
         name: {
             allowNull: false,
             type: DataTypes.STRING,
-            unique: true
+            unique: true,
+            validate: {
+                isUnique: function(value, next) {
+                    var conditions = {where: {
+                        name : value
+                    }};
+                    if (this.id !== null) {
+                        conditions.where.id = {$ne: this.id};
+                    }
+//                    console.log("Validate conditions: ", conditions);
+                    Facility.count(conditions)
+                        .then(found => {
+                            return (found !== 0) ? next("facility.name '" + value + "' is already in use") : next();
+                        })
+                        .catch(next);
+                }
+            }
         },
 
         address1: {

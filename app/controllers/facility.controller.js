@@ -37,7 +37,7 @@ exports.delete = (req, res) => {
 exports.deleteAll = (req, res) => {
 
     Facility.destroy({
-        truncate: false,
+        truncate: true,
         where: {}
     })
         .then(num => {
@@ -100,57 +100,49 @@ exports.findOne = (req, res) => {
 // Insert a new model (was create())
 exports.insert = (req, res) => {
 
-    // Validate the request
-    // TODO - extract into common method
-    // TODO - uniqueness check
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "name:  Required and cannot be empty"
-        });
-        return;
-    }
+    const inserting = populate(req);
+    inserting.id = null;
+    console.log("inserting is " + JSON.stringify(inserting));
 
-    // Save the new model in the database and return it
-    const facility = populate(req);
-    Facility.create(facility)
+    Facility.create(inserting, {
+        // Add "id" for the update version
+        "fields": ["name", "address1", "address2", "city", "state", "zipCode"]
+    })
         .then(data => {
             res.status(201).send(data);
         })
         .catch(err => {
-            console.error("Facility.insert() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error creating the facility"
-            });
+            if (err instanceof db.Sequelize.ValidationError) {
+                res.status(400).send(err.errors);
+            } else {
+                console.error("Facility.insert() error: ", err);
+                res.status(500).send({
+                    message: err.message || "Error creating the facility"
+                });
+            }
         });
+
 };
 
 // Update an existing model
 exports.update = (req, res) => {
 
-    // Validate the request
-    // TODO - extract into common method
-    // TODO - uniqueness check (ok to update existing one)
-    if (!req.body.name) {
-        res.status(400).send({
-            message: "name:  Required and cannot be empty"
-        });
-        return;
-    }
+    const updating = populate(req);
+    updating.id = req.params.id;
+    console.log("updating is " + JSON.stringify(updating));
 
-    // Update the existing model in the database
-
-    const id = req.params.id;
-
-    Facility.update(populate(req), {
-        where: {id: id }
+    Facility.update(updating, {
+        returning: true,
+        where: {id: req.params.id }
     })
+/*
         .then(num => {
             if (num == 1) {
-                Facility.findByPk(id)
+                Facility.findByPk(req.params.id)
                     .then(data => {
                         if (data === null) {
                             res.status(404).send({
-                                message: "id: No such facility with id " + id
+                                message: "id: Missing facility (after update) " + req.params.id
                             });
                         } else {
                             res.send(data);
@@ -162,11 +154,27 @@ exports.update = (req, res) => {
                 });
             }
         })
+*/
+        .then(([num, updated]) => {
+            console.log("num is " + num);
+            console.log("updated is " + JSON.stringify(updated));
+            if (num == 1) {
+                res.send(updated[0]);
+            } else {
+                res.status(404).send({
+                    message: "Missing facility " + req.params.id
+                });
+            }
+        })
         .catch(err => {
-            console.error("Facility.update() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error updating the facility"
-            });
+            if (err instanceof db.Sequelize.ValidationError) {
+                res.status(400).send(err.errors);
+            } else {
+                console.error("Facility.update() error: ", err);
+                res.status(500).send({
+                    message: err.message || "Error updating the facility"
+                });
+            }
         });
 
 };
@@ -175,20 +183,22 @@ exports.update = (req, res) => {
 
 /**
  * <p>Populate and return a Facility object from the contents of the
- * specified request body.</p>
+ * specified request body, including only client-modifiable fields.</p>
  *
  * @param req Request being processed
  *
- * @returns JavaScript object with relevant fields from the request body
+ * @returns Facility object with relevant fields from the request body
  */
 function populate(req) {
-    const facility = {
+
+    const facility = Facility.build({
         name : req.body.name,
         address1 : req.body.address1,
         address2 : req.body.address2,
         city : req.body.city,
         state : req.body.state,
         zipCode : req.body.zipCode
-    }
+    });
     return facility;
+
 }
