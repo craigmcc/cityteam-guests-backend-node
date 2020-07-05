@@ -1,6 +1,6 @@
 // Define the Facility model
 
-const { Sequelize, DataTypes, Model } = require('sequelize');
+const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 
 module.exports = (sequelize) => {
 
@@ -18,12 +18,11 @@ module.exports = (sequelize) => {
                         name : value
                     }};
                     if (this.id !== null) {
-                        conditions.where.id = {$ne: this.id};
+                        conditions.where["id"] = {[Op.ne]: this.id};
                     }
-//                    console.log("Validate conditions: ", conditions);
                     Facility.count(conditions)
                         .then(found => {
-                            return (found !== 0) ? next("facility.name '" + value + "' is already in use") : next();
+                            return (found !== 0) ? next("name: Name '" + value + "' is already in use") : next();
                         })
                         .catch(next);
                 }

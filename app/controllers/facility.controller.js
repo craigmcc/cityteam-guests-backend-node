@@ -1,204 +1,130 @@
+'use strict';
+
 // Required modules
 const db = require("../models");
+const fields = [ "name", "address1", "address2", "city", "state", "zipCode" ];
 const Facility = db.facilities;
+const BadRequest = require("../errors/bad.request.js");
+const NotFound = require("../errors/not.found.js");
 const Op = db.Sequelize.Op;
 
 // Public Methods ------------------------------------------------------------
 
-// Delete a single model by id
-exports.delete = (req, res) => {
-
-    const id = req.params.id;
-
-    Facility.destroy({
+/**
+ * <p>Delete the specified Facility.</p>
+ *
+ * @param id Primary key of the requested Facility
+ *
+ * @returns {Promise<Facility>} for the Facility that was deleted
+ *
+ * @throws NotFound if there is no Facility with the specified primary key
+ */
+exports.delete = async (id) => {
+    let result = await Facility.findByPk(id)
+    if (result == null) {
+        throw new NotFound("id: Missing Facility " + id);
+    }
+    let num = await Facility.destroy({
         where: { id: id }
-    })
-        .then(num => {
-            if (num == 1) {
-                res.status(200).send({
-                    message: "Facility: Successful delete"
-                });
-            } else {
-                res.status(404).send({
-                    message: "id: No such facility with id " + id
-                });
-            }
-        })
-        .catch(err => {
-            console.error("Facility.delete() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error deleting facility"
-            });
-        });
-
+    });
+    if (num != 1) {
+        throw new NotFound("id: Cannot actually delete Facility " + id);
+    }
+    return result;
 };
-
-// Delete all models from the database TODO - do not expose in production!
-exports.deleteAll = (req, res) => {
-
-    Facility.destroy({
-        truncate: true,
-        where: {}
-    })
-        .then(num => {
-            res.status(200).send({
-                message: `Facility: ${num} facilities were deleted successfully`
-            });
-        })
-        .catch(err => {
-            console.error("Facility.deleteAll() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error deleting all facilities"
-            });
-        });
-
-};
-
-// Find all models, with optional match on title
-exports.findAll = (req, res) => {
-
-    const name = req.query.name;
-    var condition = name ? { name: { [Op.iLike]: `%${name}%` } } : null;
-
-    Facility.findAll({ where: condition })
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            console.error("Facility.findAll() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error retrieving facilities"
-            });
-        });
-
-};
-
-// Find a single model by id
-exports.findOne = (req, res) => {
-
-    const id = req.params.id;
-
-    Facility.findByPk(id)
-        .then(data => {
-            if (data === null) {
-                res.status(404).send({
-                    message: "id: No such facility with id " + id
-                });
-            } else {
-                res.send(data);
-            }
-        })
-        .catch(err => {
-            console.error("Facility.findOne() error: ", err);
-            res.status(500).send({
-                message: err.message || "Error finding one facility"
-            });
-        });
-
-};
-
-// Insert a new model (was create())
-exports.insert = (req, res) => {
-
-    const inserting = populate(req);
-    inserting.id = null;
-    console.log("inserting is " + JSON.stringify(inserting));
-
-    Facility.create(inserting, {
-        // Add "id" for the update version
-        "fields": ["name", "address1", "address2", "city", "state", "zipCode"]
-    })
-        .then(data => {
-            res.status(201).send(data);
-        })
-        .catch(err => {
-            if (err instanceof db.Sequelize.ValidationError) {
-                res.status(400).send(err.errors);
-            } else {
-                console.error("Facility.insert() error: ", err);
-                res.status(500).send({
-                    message: err.message || "Error creating the facility"
-                });
-            }
-        });
-
-};
-
-// Update an existing model
-exports.update = (req, res) => {
-
-    const updating = populate(req);
-    updating.id = req.params.id;
-    console.log("updating is " + JSON.stringify(updating));
-
-    Facility.update(updating, {
-        returning: true,
-        where: {id: req.params.id }
-    })
-/*
-        .then(num => {
-            if (num == 1) {
-                Facility.findByPk(req.params.id)
-                    .then(data => {
-                        if (data === null) {
-                            res.status(404).send({
-                                message: "id: Missing facility (after update) " + req.params.id
-                            });
-                        } else {
-                            res.send(data);
-                        }
-                    });
-            } else {
-                res.status(404).send({
-                    message: "id: Missing facility " + id
-                });
-            }
-        })
-*/
-        .then(([num, updated]) => {
-            console.log("num is " + num);
-            console.log("updated is " + JSON.stringify(updated));
-            if (num == 1) {
-                res.send(updated[0]);
-            } else {
-                res.status(404).send({
-                    message: "Missing facility " + req.params.id
-                });
-            }
-        })
-        .catch(err => {
-            if (err instanceof db.Sequelize.ValidationError) {
-                res.status(400).send(err.errors);
-            } else {
-                console.error("Facility.update() error: ", err);
-                res.status(500).send({
-                    message: err.message || "Error updating the facility"
-                });
-            }
-        });
-
-};
-
-// Support Methods -----------------------------------------------------------
 
 /**
- * <p>Populate and return a Facility object from the contents of the
- * specified request body, including only client-modifiable fields.</p>
+ * <p>Delete all Facility objects.</p>
  *
- * @param req Request being processed
- *
- * @returns Facility object with relevant fields from the request body
+ * @returns Message including number of Facility objects that were deleted
  */
-function populate(req) {
-
-    const facility = Facility.build({
-        name : req.body.name,
-        address1 : req.body.address1,
-        address2 : req.body.address2,
-        city : req.body.city,
-        state : req.body.state,
-        zipCode : req.body.zipCode
+exports.deleteAll = async () => {
+    await Facility.destroy({
+        truncate: true,
+        where: {}
     });
-    return facility;
-
+    return "All facilities were deleted successfully";
 }
+
+/**
+ * <p>Return all Facility models, with optional match on name segment.</p>
+ *
+ * @param name Name segment that must match, or null/undefined for all models
+ *
+ * @returns {Promise<Facility[]>} for the retrieved models
+ */
+exports.findAll = async (name) => {
+    var condition = name ? { name: { [Op.iLike]: `%${name}%` } } : null;
+    return await Facility.findAll({ where: condition });
+};
+
+/**
+ * <p>Return the specified Facility.</p>
+ *
+ * @param id Primary key of the requested Facility
+ *
+ * @returns {Promise<Facility>} for the retrieved Facility
+ *
+ * @throws NotFound if there is no Facility with the specified primary key
+ */
+exports.findOne = async (id) => {
+    let result = await Facility.findByPk(id)
+    if (result == null) {
+        throw new NotFound("id: Missing Facility ", id);
+    } else {
+        return result;
+    }
+};
+
+/**
+ * <p>Insert a new Facility.</p>
+ *
+ * @param data Object containing the data to insert
+ *
+ * @returns {Promise<Facility>} for the newly created Facility
+ *
+ * @throws BadRequest if one or more validation constraints are violated
+ */
+exports.insert = async (data) => {
+    try {
+        return await Facility.create(data, {
+            fields: fields
+        });
+    } catch (err) {
+        throw err;
+    }
+};
+
+/**
+ * <p>Update an existing Facility.
+ *
+ * @param id Primary key of the Facility to update
+ * @param data Updated field(s) for this Facility
+ *
+ * @returns {Promise<Facility>}
+ *
+ * @throws BadRequest if one or more validation constraints are violated
+ * @throws NotFound if there is no Facility with the specified primary key
+ */
+exports.update = async (id, data) => {
+    let count = 0;
+    try {
+        data.id = id;
+        let fieldsPlusId = [...fields];
+        fieldsPlusId.push("id");
+        count = await Facility.update(data, {
+            fields: fieldsPlusId,
+            where: {id : id}
+        });
+        if (count == 0) {
+            throw new NotFound("id: Missing Facility " + id);
+        }
+        return await Facility.findByPk(id);
+    } catch (err) {
+        if (err instanceof db.Sequelize.ValidationError) {
+            throw new BadRequest(err.message);
+        } else {
+            throw err;
+        }
+    }
+};

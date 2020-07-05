@@ -189,7 +189,7 @@ describe('Facility Model Tests', function() {
                 try {
                     let data1b = await Facility.create(dataset.facility1full);
                 } catch (err) {
-                    expect(err.message).includes("facility.name '" +
+                    expect(err.message).includes("Name '" +
                         data1a.name + "' is already in use");
                 }
             });
@@ -621,7 +621,7 @@ describe('Facility Model Tests', function() {
                         where: {id: result2.id}
                     });
                 } catch (err) {
-                    expect(err.message).includes("facility.name '" +
+                    expect(err.message).includes("Name '" +
                         dataset.facility1full.name + "' is already in use");
                 }
 
