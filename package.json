@@ -4,8 +4,8 @@
   "description": "CityTeam Guest Application - Backend",
   "main": "backend.js",
   "scripts": {
-    "start": "node backend",
-    "test": "mocha"
+    "start": "NODE_ENV=production node backend",
+    "test": "NODE_ENV=development mocha"
   },
   "author": "",
   "license": "Apache-2.0",

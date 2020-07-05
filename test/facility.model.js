@@ -1,23 +1,24 @@
 // Tests for facility.model.js
+'use strict';
 
+// Required modules
 const chai = require('chai');
 const expect = chai.expect;
 
-const db = require("./index.js");
-const Facility = require("../app/models/facility.model.js")(db.sequelize);
-const SequelizeValidationError = db.Sequelize.SequelizeValidationError;
+const db = require("../app/models");
+const Facility = db.Facility;
 
 const dataset = {
     facility1full: {
         name: 'First Facility',
-        address1: 'First Address 1',
+        address1: 'First Address 1 Model',
         address2: 'First Address 2',
         city: 'First City',
         state: 'OR',
         zipCode: '99999'
     },
     facility1noName: {
-        address1: 'First Address 1',
+        address1: 'First Address 1 Model',
         address2: 'First Address 2',
         city: 'First City',
         state: 'OR',
@@ -25,7 +26,7 @@ const dataset = {
     },
     facility2full: {
         name: 'Second Facility',
-        address1: 'Second Address 1',
+        address1: 'Second Address 1 Model',
         address2: 'Second Address 2',
         city: 'Second City',
         state: 'WA',
@@ -33,7 +34,7 @@ const dataset = {
     },
     facility3full: {
         name: 'Third Facility',
-        address1: 'Third Address 1',
+        address1: 'Third Address 1 Model',
         address2: 'Third Address 2',
         city: 'Third City',
         state: 'CA',
@@ -188,6 +189,7 @@ describe('Facility Model Tests', function() {
                 let data1a = await Facility.create(dataset.facility1full);
                 try {
                     let data1b = await Facility.create(dataset.facility1full);
+                    expect.fail("Should have thrown validation error");
                 } catch (err) {
                     expect(err.message).includes("Name '" +
                         data1a.name + "' is already in use");
@@ -201,6 +203,7 @@ describe('Facility Model Tests', function() {
             it("should cause validation error", async () => {
                 try {
                     let result = await Facility.create(dataset.facility1noName);
+                    expect.fail("Should have thrown validation error");
                 } catch (err) {
                     expect(err.message).includes("facility.name cannot be null");
                 }

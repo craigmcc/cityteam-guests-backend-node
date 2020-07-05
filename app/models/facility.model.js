@@ -1,4 +1,4 @@
-// Define the Facility model
+'use strict';
 
 const { Sequelize, DataTypes, Model, Op } = require('sequelize');
 

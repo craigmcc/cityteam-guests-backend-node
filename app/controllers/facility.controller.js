@@ -3,7 +3,7 @@
 // Required modules
 const db = require("../models");
 const fields = [ "name", "address1", "address2", "city", "state", "zipCode" ];
-const Facility = db.facilities;
+const Facility = db.Facility;
 const BadRequest = require("../errors/bad.request.js");
 const NotFound = require("../errors/not.found.js");
 const Op = db.Sequelize.Op;
@@ -86,11 +86,20 @@ exports.findOne = async (id) => {
  * @throws BadRequest if one or more validation constraints are violated
  */
 exports.insert = async (data) => {
+    let transaction;
     try {
-        return await Facility.create(data, {
-            fields: fields
+        transaction = await db.sequelize.transaction();
+        let result = await Facility.create(data, {
+            fields: fields,
+            transaction: transaction
         });
+        await transaction.commit();
+        transaction = null;
+        return result;
     } catch (err) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         throw err;
     }
 };
