@@ -718,38 +718,6 @@ describe('Facility Model Tests', function() {
 // Support Methods -----------------------------------------------------------
 
 /**
- * <p>Create and return a new row, waiting for the asynchronous operation
- * to complete.</p>
- *
- * @param data Object containing input fields
- *
- * @return Inserted model
- */
-async function create(data) {
-    result = await Facility.create(data);
-    return result;
-}
-
-/**
- * <p>Populate a model object from the specified object</p>
- *
- * @param data Object from which to acquire data
- *
- * @return Model object populated from the specified data
- */
-function populate(data) {
-    const model = Facility.build({
-        name: data.name,
-        address1: data.address1,
-        address2: data.address2,
-        city: data.city,
-        state: data.state,
-        zipCode: data.zipCode
-    });
-    return model;
-}
-
-/**
  * <p>Validate the descriptive information about the specified field against
  * the specified parameters.</p>
  *

@@ -36,14 +36,14 @@ exports.delete = async (id) => {
 /**
  * <p>Delete all Facility objects.</p>
  *
- * @returns Message including number of Facility objects that were deleted
+ * @returns Number of objects that were deleted
  */
 exports.deleteAll = async () => {
-    await Facility.destroy({
+    let count = await Facility.destroy({
         truncate: true,
         where: {}
     });
-    return "All facilities were deleted successfully";
+    return count;
 }
 
 /**
@@ -70,7 +70,7 @@ exports.findAll = async (name) => {
 exports.findOne = async (id) => {
     let result = await Facility.findByPk(id)
     if (result == null) {
-        throw new NotFound("id: Missing Facility ", id);
+        throw new NotFound("id: Missing Facility " + id);
     } else {
         return result;
     }
@@ -94,7 +94,6 @@ exports.insert = async (data) => {
             transaction: transaction
         });
         await transaction.commit();
-        transaction = null;
         return result;
     } catch (err) {
         if (transaction) {
@@ -110,7 +109,7 @@ exports.insert = async (data) => {
  * @param id Primary key of the Facility to update
  * @param data Updated field(s) for this Facility
  *
- * @returns {Promise<Facility>}
+ * @returns {Promise<Facility>} for the updated Facility
  *
  * @throws BadRequest if one or more validation constraints are violated
  * @throws NotFound if there is no Facility with the specified primary key
