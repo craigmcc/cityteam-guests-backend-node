@@ -28,8 +28,18 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Configure models
-//db.facilities = require("./facility.model.js")(sequelize, Sequelize);
+db.Ban = require("./ban.model.js")(sequelize);
 db.Facility = require("./facility.model.js")(sequelize);
+db.Guest = require("./guest.model.js")(sequelize);
+db.Registration = require("./registration.model.js")(sequelize);
+db.Template = require("./template.model.js")(sequelize);
+
+// Configure associations
+db.Ban.associate(db);
+db.Facility.associate(db);
+db.Guest.associate(db);
+db.Registration.associate(db);
+db.Template.associate(db);
 
 // Export database interface
 module.exports = db;
