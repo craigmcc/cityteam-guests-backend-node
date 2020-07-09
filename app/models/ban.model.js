@@ -26,7 +26,19 @@ module.exports = (sequelize) => {
         guestId: {
             allowNull: false,
             type: DataTypes.INTEGER,
-            // TODO - validate foreign key reference
+            validate: {
+                isGuestIdValid : function(value, next) {
+                    db.Guest.findByPk(this.guestId)
+                        .then(guest => {
+                            if (guest === null) {
+                                return next("guestId: Missing guest " + this.guestId);
+                            } else {
+                                return next();
+                            }
+                        })
+                        .catch(next);
+                }
+            }
         },
 
         staff: {

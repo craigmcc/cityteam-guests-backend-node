@@ -17,7 +17,19 @@ module.exports = (sequelize) => {
             allowNull: false,
             type: DataTypes.INTEGER,
             unique: "uniqueFacilityRegistrationDateMatNumber",
-            // TODO - validate foreign key reference
+            validate: {
+                isFacilityIdValid : function(value, next) {
+                    db.Facility.findByPk(this.facilityId)
+                        .then(facility => {
+                            if (facility === null) {
+                                return next("facilityId: Missing facility " + this.facilityId);
+                            } else {
+                                return next();
+                            }
+                        })
+                        .catch(next);
+                }
+            }
         },
 
         matNumber: {
@@ -34,7 +46,6 @@ module.exports = (sequelize) => {
         paymentType: {
             allowNull: false,
             type: DataTypes.ENUM("$$", "AG", "CT", "FM", "MM"),
-            // TODO - validate valid code
         },
 
         registrationDate: {
@@ -56,7 +67,27 @@ module.exports = (sequelize) => {
     }, {
 
         modelName: "registration",
-        sequelize
+        sequelize,
+        validate: {
+            uniqueDateMatNumberFacility() {
+                var conditions = {where: {
+                        facilityId: this.facilityId,
+                        matNumber: this.matNumber,
+                        registrationDate: this.registrationDate
+                    }};
+                if (this.id != null) {
+                    conditions.where["id"] = {[Op.ne]: this.id};
+                }
+                Registration.count(conditions)
+                    .then(found => {
+                        return (found !== 0) ? next("matNumber: Mat number "
+                            + this.matNumber + " is already use on date '"
+                            + this.registrationDate + " in this facility")
+                            : next();
+                    })
+                    .catch(next);
+            }
+        }
 
     });
 

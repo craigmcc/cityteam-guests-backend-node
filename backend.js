@@ -14,6 +14,19 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Configure openapi support
+const openapi = require('@wesleytodd/openapi')
+const oapi = openapi({
+      openapi: '3.0.0',
+    info: {
+          title: 'CityTeam Guests Application Backend',
+        version: '1.0.0'
+    }
+})
+app.use(oapi)
+app.use('/openapi-ui', oapi.redoc)
+//app.use('/openapi-ui', oapi.swaggerui)
+
 // Configure database and models
 const db = require("./app/models");
 db.sequelize.sync();
@@ -23,7 +36,24 @@ db.sequelize.sync();
 // });
 
 // Simple route for "Hello, World" message
-app.get("/", (req, res) => {
+app.get("/", oapi.path({
+    description: 'Hello, World! message',
+    responses: {
+        200: {
+            description: 'Successful response',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}), (req, res) => {
     res.json({ message: "Welcome to CityTeam Guests - Backend Application." });
 });
 
