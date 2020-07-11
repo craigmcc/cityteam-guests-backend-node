@@ -1,4 +1,4 @@
-// Tests for facility.model.js
+// Tests for Facility model
 'use strict';
 
 // Required modules
@@ -8,6 +8,7 @@ const expect = chai.expect;
 const db = require("../app/models");
 const Facility = db.Facility;
 
+// Test data
 const dataset = {
     facility1full: {
         name: 'First Facility',

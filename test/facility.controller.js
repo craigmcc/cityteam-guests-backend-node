@@ -1,4 +1,4 @@
-// Tests for facility.controller.js
+// Tests for Facility controller
 'use strict';
 
 // Required modules
@@ -8,8 +8,9 @@ const expect = chai.expect;
 const db = require("../app/models");
 const Facility = db.Facility;
 
-const controller = require("../app/controllers/facility.controller.js");
+const controller = require("../app/controllers/facility.controller");
 
+// Test data
 const dataset = {
     facility1full: {
         name: 'First Facility',
