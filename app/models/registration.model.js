@@ -1,6 +1,9 @@
+// Registration model
 "use strict";
 
-const { Sequelize, DataTypes, Model, Op } = require("sequelize");
+const { DataTypes, Model, Op } = require("sequelize");
+var Facility; // Filled in by associate()
+var Guest; // Filled in by associate()
 
 module.exports = (sequelize) => {
 
@@ -18,13 +21,41 @@ module.exports = (sequelize) => {
             type: DataTypes.INTEGER,
             unique: "uniqueFacilityRegistrationDateMatNumber",
             validate: {
-                isFacilityIdValid : function(value, next) {
-                    db.Facility.findByPk(this.facilityId)
+                isValidFacilityId: function(value, next) {
+                    Facility.findByPk(value)
                         .then(facility => {
-                            if (facility === null) {
-                                return next("facilityId: Missing facility " + this.facilityId);
+                            if (facility) {
+                                next();
                             } else {
-                                return next();
+                                next("facilityId: Missing facility " + value);
+                            }
+                        })
+                        .catch(next);
+                }
+            }
+        },
+
+        features: {
+            allowNull: true,
+            type: DataTypes.STRING
+            // Auto-generated when template is exploded, so no validations
+        },
+
+        guestId: {
+            allowNull: true,
+            type: DataTypes.INTEGER,
+            unique: "uniqueFacilityRegistrationDateMatNumber",
+            validate: {
+                isValidGuestId: function(value, next) {
+                    if (!value) {
+                        next();
+                    }
+                    Facility.findByPk(value)
+                        .then(facility => {
+                            if (facility) {
+                                next();
+                            } else {
+                                next("facilityId: Missing facility " + value);
                             }
                         })
                         .catch(next);
@@ -39,12 +70,20 @@ module.exports = (sequelize) => {
         },
 
         paymentAmount: {
-            allowNull: false,
-            type: DataTypes.DECIMAL
+            allowNull: true,
+            type: DataTypes.DECIMAL,
+            validate: {
+                isPaymentAmountValid: function(value) {
+                    if (value && (value <= 0.00)) {
+                        throw new Error("paymentAmount: Must be positive");
+                    }
+                }
+            }
+
         },
 
         paymentType: {
-            allowNull: false,
+            allowNull: true,
             type: DataTypes.ENUM("$$", "AG", "CT", "FM", "MM"),
         },
 
@@ -69,8 +108,33 @@ module.exports = (sequelize) => {
         modelName: "registration",
         sequelize,
         validate: {
-            uniqueDateMatNumberFacility() {
-                var conditions = {where: {
+            isGuestForFacility(next) {
+                console.log("TODO - isGuestForFacility");
+                if (!this.guestId) {
+                    next();
+                }
+                Guest.findByPk(this.guestId)
+                    .then(guest => {
+                        if (guest) {
+                            if (guest.facilityId !== this.facilityId) {
+                                throw new Error("guestId:  guest " + this.guestId +
+                                    "does not belong to facility " + this.facilityId);
+                            }
+                        } else {
+                            throw new Error("guestId: Missing guest " + this.guestId);
+                        }
+                        next();
+                    })
+                    .catch(next);
+            },
+            isPaymentAmountPresent() {
+                if (this.paymentType && (this.paymentType === "$$") &&
+                    (!this.paymentAmount)) {
+                    throw new Error("paymentAmount: Must be specified for payment type '$$'");
+                }
+            },
+            isUniqueDateMatNumberFacility(next) {
+                let conditions = {where: {
                         facilityId: this.facilityId,
                         matNumber: this.matNumber,
                         registrationDate: this.registrationDate
@@ -92,11 +156,19 @@ module.exports = (sequelize) => {
     });
 
     Registration.associate = function(models) {
+        Facility = models.Facility;
+        Guest = models.Guest;
         models.Registration.belongsTo(models.Facility, {
             // name: facilityId,
             onDelete: "CASCADE",
             foreignKey: {
                 allowNull: false
+            }
+        });
+        models.Registration.belongsTo(models.Guest, {
+            // name: guestId,
+            foreignKey: {
+                allowNull: true
             }
         });
     };

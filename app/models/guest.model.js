@@ -81,6 +81,7 @@ module.exports = (sequelize) => {
     Guest.associate = function(models) {
         Facility = models.Facility;
         models.Guest.hasMany(models.Ban);
+        models.Guest.hasMany(models.Registration);
         models.Guest.belongsTo(models.Facility, {
             // name: facilityId,
             onDelete: "CASCADE",
