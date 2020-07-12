@@ -1,7 +1,7 @@
 // Template model
 "use strict";
 
-const { Sequelize, DataTypes, Model, Op } = require("sequelize");
+const { DataTypes, Model, Op } = require("sequelize");
 var Facility; // Filled in by associate()
 const MatsList = require("../util/mats.list");
 

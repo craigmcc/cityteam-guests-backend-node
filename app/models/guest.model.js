@@ -1,7 +1,8 @@
 // Guest model
 "use strict";
 
-const { Sequelize, DataTypes, Model, Op } = require("sequelize");
+const { DataTypes, Model, Op } = require("sequelize");
+var Facility; // Filled in by associate()
 
 module.exports = (sequelize) => {
 
@@ -9,18 +10,23 @@ module.exports = (sequelize) => {
 
     Guest.init({
 
+        comments: {
+            allowNull: true,
+            type: DataTypes.STRING
+        },
+
         facilityId: {
             allowNull: false,
             type: DataTypes.INTEGER,
             unique: "uniqueNameWithinFacility",
             validate: {
-                isFacilityIdValid : function(value, next) {
-                    db.Facility.findByPk(this.facilityId)
+                isValidFacilityId: function(value, next) {
+                    Facility.findByPk(value)
                         .then(facility => {
-                            if (facility === null) {
-                                return next("facilityId: Missing facility " + this.facilityId);
+                            if (facility) {
+                                next();
                             } else {
-                                return next();
+                                next("facilityId: Missing facility " + value);
                             }
                         })
                         .catch(next);
@@ -45,33 +51,35 @@ module.exports = (sequelize) => {
         modelName: "guest",
         sequelize,
         validate: {
-            firstOrLastNameRequired() {
-                if ((this.firstName === null) && (this.lastName === null)) {
+/*
+            isFirstOrLastNamePresent() {
+                if (!this.firstName && !lastName) {
                     throw new Error("name:  At least one of firstName and lastName is required");
                 }
             },
-            uniqueNameWithinFacility() {
-                var conditions = {where: {
+*/
+            isNameUniqueWithinFacility: function(next) {
+                let conditions = {where: {
                         facilityId: this.facilityId,
                         firstName: this.firstName,
                         lastName: this.lastName
                     }};
-                if (this.id != null) {
+                if (this.id) {
                     conditions.where["id"] = {[Op.ne]: this.id};
                 }
                 Guest.count(conditions)
                     .then(found => {
-                        return (found !== 0) ? next("name: Name '"
-                            + this.firstName + " " + this.lastName
-                            + "' is already in use in this facility")
-                            : next();
+                        return (found !== 0) ? next("name: Name '" +
+                            this.firstName + " " + this.lastName +
+                            "' is already in use within this facility") : next();
                     })
                     .catch(next);
-            }
+            },
         }
     });
 
     Guest.associate = function(models) {
+        Facility = models.Facility;
         models.Guest.hasMany(models.Ban);
         models.Guest.belongsTo(models.Facility, {
             // name: facilityId,

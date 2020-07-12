@@ -45,7 +45,8 @@ const dataset = {
         name: "Standard Mats",
         socketMats: "6-10,12",
     },
-}
+
+};
 
 describe("Template Model Tests", function() {
 
@@ -353,7 +354,7 @@ describe("Template Model Tests", function() {
 
     });
 
-    describe("#update", () => {
+    describe("#update()", () => {
 
         context("change name", () => {
 
