@@ -5,10 +5,10 @@
 const chai = require("chai");
 const expect = chai.expect;
 
-const db = require("../app/models");
+const db = require("../../app/models");
 const Facility = db.Facility;
 
-const controller = require("../app/controllers/facility.controller");
+const controller = require("../../app/controllers/facility.controller");
 
 // Test data
 const dataset = {

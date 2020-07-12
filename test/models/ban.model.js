@@ -5,7 +5,7 @@
 const chai = require("chai");
 const expect = chai.expect;
 
-const db = require("../app/models");
+const db = require("../../app/models");
 const Ban = db.Ban;
 const Facility = db.Facility;
 const Guest = db.Guest;

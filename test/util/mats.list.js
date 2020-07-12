@@ -3,7 +3,7 @@
 
 const chai = require("chai");
 const expect = chai.expect;
-const MatsList = require("../app/util/mats.list.js");
+const MatsList = require("../../app/util/mats.list.js");
 
 // Single Number Lists data
 
