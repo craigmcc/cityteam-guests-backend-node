@@ -50,12 +50,12 @@ module.exports = (sequelize) => {
                     if (!value) {
                         next();
                     }
-                    Facility.findByPk(value)
-                        .then(facility => {
-                            if (facility) {
+                    Guest.findByPk(value)
+                        .then(guest => {
+                            if (guest) {
                                 next();
                             } else {
-                                next("facilityId: Missing facility " + value);
+                                next("guestId: Missing guest " + value);
                             }
                         })
                         .catch(next);
@@ -109,7 +109,6 @@ module.exports = (sequelize) => {
         sequelize,
         validate: {
             isGuestForFacility(next) {
-                console.log("TODO - isGuestForFacility");
                 if (!this.guestId) {
                     next();
                 }
@@ -145,12 +144,14 @@ module.exports = (sequelize) => {
                 Registration.count(conditions)
                     .then(found => {
                         return (found !== 0) ? next("matNumber: Mat number "
-                            + this.matNumber + " is already use on date '"
-                            + this.registrationDate + " in this facility")
+                            + this.matNumber + " is already used on date '"
+                            + this.registrationDate + " in facility "
+                            + this.facilityId)
                             : next();
                     })
                     .catch(next);
             }
+            // TODO - fail if there is a current ban?
         }
 
     });

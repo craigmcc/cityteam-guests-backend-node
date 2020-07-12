@@ -146,26 +146,159 @@ describe("Registration Model Tests", function() {
 
         context("with incorrect information", () => {
 
+            it("should fail on duplicate date/mat/facility", async () => {
+
+                let facility1 = await Facility.create(dataset.facility1full);
+                let registration1data = {
+                    ...dataset.registration1Full
+                }
+                registration1data.facilityId = facility1.id;
+                delete registration1data.guestId;
+                registration1data.matNumber = 42;
+                registration1data.registrationDate = "2020-07-04";
+
+                await Registration.create(registration1data);
+                try {
+                    await Registration.create(registration1data);
+                    expect.fail("Should have failed on duplicate date/mat/facility");
+                } catch (err) {
+                    expect(err.message).includes("is already used on date");
+                }
+
+            });
+
             it("should fail on guestId for wrong facility", async () => {
-                // TODO
+
+                let facility1 = await Facility.create(dataset.facility1full);
+                let guest1data = {
+                    ...dataset.guest1Full
+                }
+                guest1data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1data);
+
+                let facility2 = await Facility.create(dataset.facility2full);
+                let registration2data = {
+                    ...dataset.registration1Full
+                }
+                registration2data.facilityId = facility2.id;
+                registration2data.guestId = guest1.id;
+
+                try {
+                    await Registration.create(registration2data);
+                    expect.fail("Should have failed on guestId for wrong facility");
+                } catch (err) {
+                    expect(err.message).includes("does not belong to facility");
+                }
+
             });
 
             it("should fail on invalid facilityId", async () => {
-                // TODO
+
+                let registration1data = {
+                    ...dataset.registration2NoGuest
+                }
+                registration1data.facilityId = 9999;
+                delete registration1data.guestId;
+                try {
+                    await Registration.create(registration1data);
+                    expect.fail("Should have failed on invalid facilityId");
+                } catch (err) {
+                    expect(err.message).includes("Missing facility");
+                }
+
             });
 
             it("should fail on invalid guestId", async () => {
-                // TODO
+
+                let facility1 = await Facility.create(dataset.facility1full);
+                let registration1data = {
+                    ...dataset.registration2NoGuest
+                }
+                registration1data.facilityId = facility1.id;
+                registration1data.guestId = 9999;
+                try {
+                    await Registration.create(registration1data);
+                    expect.fail("Should have failed on invalid guestId");
+                } catch (err) {
+                    expect(err.message).includes("Missing guest");
+                }
+
             });
 
             it ("should fail on missing facilityId", async () => {
-                // TODO
-            })
 
-            // TODO - paymentAmount versus paymentType tests
+                let registration1data = {
+                    ...dataset.registration2NoGuest
+                }
+                delete registration1data.facilityId;
+                delete registration1data.guestId;
+                try {
+                    await Registration.create(registration1data);
+                    expect.fail("Should have failed on invalid facilityId");
+                } catch (err) {
+                    expect(err.message).includes("cannot be null");
+                }
+
+            });
+
+            it("should fail on missing paymentAmount", async () => {
+
+                let facility1 = await Facility.create(dataset.facility1full);
+                let guest1data = {
+                    ...dataset.guest1Full
+                }
+                guest1data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1data);
+
+                let registration1data = {
+                    ...dataset.registration1Full
+                }
+                registration1data.facilityId = facility1.id;
+                registration1data.guestId = guest1.id;
+                delete registration1data.paymentAmount;
+                registration1data.paymentType = "$$";
+                try {
+                    await Registration.create(registration1data);
+                    expect.fail("Should have failed on missing payment amount");
+                } catch (err) {
+                    expect(err.message).includes("Must be specified for payment type");
+                }
+
+            });
 
         });
 
-    })
+    });
+
+    describe("#update()", () => {
+
+        context("adding guest later", () => {
+
+            it("should pass", async () => {
+
+                let facility1 = await Facility.create(dataset.facility1full);
+                let registration1data = {
+                    ...dataset.registration2NoGuest
+                };
+                registration1data.facilityId = facility1.id;
+                delete registration1data.guestId;
+                let registration1 = await Registration.create(registration1data);
+
+                let guest1data = {
+                    ...dataset.guest1Full
+                }
+                guest1data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1data);
+
+                registration1data.guestId = guest1.id;
+                await Registration.update(registration1.dataValues, {
+                    where: {id: registration1.id}
+                });
+
+            });
+
+        });
+
+    });
 
 });

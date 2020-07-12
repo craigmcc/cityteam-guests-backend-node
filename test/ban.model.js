@@ -186,8 +186,4 @@ describe("Ban Model Tests", function() {
 
     });
 
-
-
-
-
 });
