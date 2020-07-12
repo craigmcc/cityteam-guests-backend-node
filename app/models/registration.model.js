@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
 
     Registration.init({
 
-        comment: {
+        comments: {
             allowNull: true,
             type: DataTypes.STRING
         },

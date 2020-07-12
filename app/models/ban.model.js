@@ -57,7 +57,6 @@ module.exports = (sequelize) => {
                 if (!this.banFrom || !this.banTo) {
                     throw new Error("Both banFrom and banTo are required");
                 }
- //               if (this.banFrom.isAfter(this.banTo)) {
                 if (this.banFrom > this.banTo) {
                     throw new Error("banTo must be equal to or greater than banFrom");
                 }

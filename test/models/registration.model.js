@@ -53,6 +53,7 @@ const dataset = {
 
     // Fill in facilityId and (optional) guestId after those objects are created
     registration1Full: {
+        comments: "Came in early",
         facilityId: 0,
         features: "H",
         guestId: 0,

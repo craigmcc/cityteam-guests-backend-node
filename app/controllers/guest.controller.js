@@ -1,10 +1,10 @@
-// Facility controller
+// Guest controller
 'use strict';
 
 // Required modules
 const db = require("../models");
-const fields = [ "name", "address1", "address2", "city", "state", "zipCode" ];
-const Facility = db.Facility;
+const fields = [ "comments", "facilityId", "firstName", "lastName" ];
+const Guest = db.Guest;
 const BadRequest = require("../errors/bad.request.js");
 const NotFound = require("../errors/not.found.js");
 const Op = db.Sequelize.Op;
@@ -12,35 +12,35 @@ const Op = db.Sequelize.Op;
 // Public Methods ------------------------------------------------------------
 
 /**
- * <p>Delete the specified Facility.</p>
+ * <p>Delete the specified Guest.</p>
  *
- * @param id Primary key of the requested Facility
+ * @param id Primary key of the requested Guest
  *
- * @returns {Promise<Facility>} for the Facility that was deleted
+ * @returns {Promise<Guest>} for the Guest that was deleted
  *
- * @throws NotFound if there is no Facility with the specified primary key
+ * @throws NotFound if there is no Guest with the specified primary key
  */
 exports.delete = async (id) => {
-    let result = await Facility.findByPk(id)
+    let result = await Guest.findByPk(id)
     if (result == null) {
-        throw new NotFound("id: Missing Facility " + id);
+        throw new NotFound("id: Missing Guest " + id);
     }
-    let num = await Facility.destroy({
+    let num = await Guest.destroy({
         where: { id: id }
     });
     if (num != 1) {
-        throw new NotFound("id: Cannot actually delete Facility " + id);
+        throw new NotFound("id: Cannot actually delete Guest " + id);
     }
     return result;
 };
 
 /**
- * <p>Delete all Facility objects.</p>
+ * <p>Delete all Guest objects.</p>
  *
  * @returns Number of objects that were deleted
  */
 exports.deleteAll = async () => {
-    let count = await Facility.destroy({
+    let count = await Guest.destroy({
         truncate: true,
         where: {}
     });
@@ -48,47 +48,53 @@ exports.deleteAll = async () => {
 }
 
 /**
- * <p>Return all Facility models, with optional match on name segment,
- * sorted by name.</p>
+ * <p>Return all Guest models, with optional match on firstName
+ * or lastName segment, sorted by firstName and lastName.</p>
  *
  * @param name Name segment that must match, or null/undefined for all models
  *
- * @returns {Promise<Facility[]>} for the retrieved models
+ * @returns {Promise<Guest[]>} for the retrieved models
  */
 exports.findAll = async (name) => {
     let conditions = name ? {
         where: {
-            name: { [Op.iLike]: `%${name}%` }
+            [Op.or]: {
+                firstName: {[Op.iLike]: `%${name}%`},
+                lastName: {[Op.iLike]: `%${name}%`}
+            }
         }
     } : { };
-    conditions.order = [ ['name', 'ASC'] ];
-    return await Facility.findAll(conditions);
+    conditions.order = [
+        ['firstName', 'ASC'],
+        ['lastName', 'ASC']
+    ];
+    return await Guest.findAll(conditions);
 };
 
 /**
- * <p>Return the specified Facility.</p>
+ * <p>Return the specified Guest.</p>
  *
- * @param id Primary key of the requested Facility
+ * @param id Primary key of the requested Guest
  *
- * @returns {Promise<Facility>} for the retrieved Facility
+ * @returns {Promise<Guest>} for the retrieved Guest
  *
- * @throws NotFound if there is no Facility with the specified primary key
+ * @throws NotFound if there is no Guest with the specified primary key
  */
 exports.findOne = async (id) => {
-    let result = await Facility.findByPk(id)
+    let result = await Guest.findByPk(id)
     if (result == null) {
-        throw new NotFound("id: Missing Facility " + id);
+        throw new NotFound("id: Missing Guest " + id);
     } else {
         return result;
     }
 };
 
 /**
- * <p>Insert a new Facility.</p>
+ * <p>Insert a new Guest.</p>
  *
  * @param data Object containing the data to insert
  *
- * @returns {Promise<Facility>} for the newly created Facility
+ * @returns {Promise<Guest>} for the newly created Guest
  *
  * @throws BadRequest if one or more validation constraints are violated
  */
@@ -96,7 +102,7 @@ exports.insert = async (data) => {
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
-        let result = await Facility.create(data, {
+        let result = await Guest.create(data, {
             fields: fields,
             transaction: transaction
         });
@@ -111,15 +117,15 @@ exports.insert = async (data) => {
 };
 
 /**
- * <p>Update an existing Facility.
+ * <p>Update an existing Guest.
  *
- * @param id Primary key of the Facility to update
- * @param data Updated field(s) for this Facility
+ * @param id Primary key of the Guest to update
+ * @param data Updated field(s) for this Guest
  *
- * @returns {Promise<Facility>} for the updated Facility
+ * @returns {Promise<Guest>} for the updated Guest
  *
  * @throws BadRequest if one or more validation constraints are violated
- * @throws NotFound if there is no Facility with the specified primary key
+ * @throws NotFound if there is no Guest with the specified primary key
  */
 exports.update = async (id, data) => {
     let count = 0;
@@ -127,14 +133,14 @@ exports.update = async (id, data) => {
         data.id = id;
         let fieldsPlusId = [...fields];
         fieldsPlusId.push("id");
-        count = await Facility.update(data, {
+        count = await Guest.update(data, {
             fields: fieldsPlusId,
             where: {id : id}
         });
         if (count == 0) {
-            throw new NotFound("id: Missing Facility " + id);
+            throw new NotFound("id: Missing Guest " + id);
         }
-        return await Facility.findByPk(id);
+        return await Guest.findByPk(id);
     } catch (err) {
         if (err instanceof db.Sequelize.ValidationError) {
             throw new BadRequest(err.message);

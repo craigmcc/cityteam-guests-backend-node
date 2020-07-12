@@ -58,7 +58,11 @@ app.get("/", oapi.path({
 });
 
 // Define routes for each model
+require("./app/routes/ban.routes")(app);
 require("./app/routes/facility.routes")(app);
+require("./app/routes/guest.routes")(app);
+require("./app/routes/registration.routes")(app);
+require("./app/routes/template.routes")(app);
 
 // Set port, listen for requests
 const PORT = process.env.PORT || 8080;
