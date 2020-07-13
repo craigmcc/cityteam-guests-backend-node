@@ -1,4 +1,4 @@
-// Tests for Template controller
+// Tests for Guest controller
 'use strict';
 
 // Required modules
@@ -7,9 +7,9 @@ const expect = chai.expect;
 
 const db = require("../../app/models");
 const Facility = db.Facility;
-const Template = db.Template;
+const Guest = db.Guest;
 
-const controllerUnderTest = require("../../app/controllers/template.controller");
+const controllerUnderTest = require("../../app/controllers/guest.controller");
 
 // Test data
 const dataset = {
@@ -33,24 +33,21 @@ const dataset = {
     },
 
     // Fill in facilityId after Facility is created
-    template1Full: {
-        allMats: "1-24",
+    guest1Full: {
+        comments: "First Guest Comment",
         facilityId: 0,
-        handicapMats: "2,4,6",
-        name: "Emergency Fewer Mats",
-        socketMats: "6-10,12",
+        firstName: "Fred",
+        lastName: "Flintstone"
     },
-    template2Full: {
-        allMats: "1-58",
+    guest2Full: {
         facilityId: 0,
-        handicapMats: "2,4,6",
-        name: "Standard Mats",
-        socketMats: "6-10,12",
+        firstName: "Barney",
+        lastName: "Rubble"
     },
 
 };
 
-describe('Template Controller Tests', () => {
+describe('Guest Controller Tests', () => {
 
     // Testing Hooks ---------------------------------------------------------
 
@@ -59,14 +56,14 @@ describe('Template Controller Tests', () => {
         await Facility.sync({
             force: true
         });
-        await Template.sync({
+        await Guest.sync({
             force: true
         });
     });
 
     beforeEach("#erase", async () => {
 //        console.log("#erase running");
-        await Template.destroy({
+        await Guest.destroy({
             cascade: true,
             truncate: true
         });
@@ -85,17 +82,18 @@ describe('Template Controller Tests', () => {
             it("should destroy one object when specified by id", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1data = {
-                    ...dataset.template1Full
+                let guest1data = {
+                    ...dataset.guest1Full
                 };
-                template1data.facilityId = facility1.id;
-                let template1 = await Template.create(template1data);
+                guest1data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1data);
 
-                let count = await Template.count({});
+                let count = await Guest.count({});
                 expect(count).to.equal(1);
-                let result = await controllerUnderTest.delete(template1.id);
-                expect(result.name).to.equal(template1.name);
-                count = await Template.count({});
+                let result = await controllerUnderTest.delete(guest1.id);
+                expect(result.firstName).to.equal(guest1.firstName);
+                expect(result.lastName).to.equal(guest1.lastName);
+                count = await Guest.count({});
                 expect(count).to.equal(0);
 
             });
@@ -107,7 +105,7 @@ describe('Template Controller Tests', () => {
                     await controllerUnderTest.delete(id);
                     expect.fail("Should have thrown NotFound error");
                 } catch (err) {
-                    let expected = "id: Missing Template " + id;
+                    let expected = "id: Missing Guest " + id;
                     expect(err.message).includes(expected);
                 }
 
@@ -124,13 +122,13 @@ describe('Template Controller Tests', () => {
             it("should destroy all objects when present", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let templatesData = [
-                    dataset.template1Full,
-                    dataset.template2Full
+                let guestsData = [
+                    dataset.guest1Full,
+                    dataset.guest2Full
                 ];
-                templatesData[0].facilityId = facility1.id;
-                templatesData[1].facilityId = facility1.id;
-                await Template.bulkCreate(templatesData, {
+                guestsData[0].facilityId = facility1.id;
+                guestsData[1].facilityId = facility1.id;
+                await Guest.bulkCreate(guestsData, {
                     validate: true
                 });
 
@@ -157,20 +155,20 @@ describe('Template Controller Tests', () => {
             it("should find all objects", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let templatesData = [
-                    dataset.template1Full,
-                    dataset.template2Full
+                let guestsData = [
+                    dataset.guest1Full,
+                    dataset.guest2Full
                 ];
-                templatesData[0].facilityId = facility1.id;
-                templatesData[1].facilityId = facility1.id;
-                await Template.bulkCreate(templatesData, {
+                guestsData[0].facilityId = facility1.id;
+                guestsData[1].facilityId = facility1.id;
+                await Guest.bulkCreate(guestsData, {
                     validate: true
                 });
-                let count = await(Template.count({}));
+                let count = await Guest.count({});
                 expect(count).to.equal(2);
 
-                let templatesResult = await controllerUnderTest.findAll();
-                expect(templatesResult.length).to.equal(2);
+                let guestsResult = await controllerUnderTest.findAll();
+                expect(guestsResult.length).to.equal(2);
 
             });
 
@@ -181,60 +179,60 @@ describe('Template Controller Tests', () => {
             it.skip("should find all objects by wildcard match", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let templatesData = [
-                    dataset.template1Full,
-                    dataset.template2Full
+                let guestsData = [
+                    dataset.guest1Full,
+                    dataset.guest2Full
                 ];
-                templatesData[0].facilityId = facility1.id;
-                templatesData[1].facilityId = facility1.id;
-                await controllerUnderTest.bulkCreate(templatesData, {
+                guestsData[0].facilityId = facility1.id;
+                guestsData[1].facilityId = facility1.id;
+                await Guest.bulkCreate(guestsData, {
                     validate: true
                 });
-                let count = await(controllerUnderTest.count({}));
+                let count = await Guest.count({});
                 expect(count).to.equal(2);
 
-                let templatesResult = await controllerUnderTest.findAll("mats");
-                expect(templatesResult.length).to.equal(2);
+                let guestsResult = await controllerUnderTest.findAll("red");
+                expect(guestsResult.length).to.equal(1);
 
             });
 
             it.skip("should find one object by more specific match", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let templatesData = [
-                    dataset.template1Full,
-                    dataset.template2Full
+                let guestsData = [
+                    dataset.guest1Full,
+                    dataset.guest2Full
                 ];
-                templatesData[0].facilityId = facility1.id;
-                templatesData[1].facilityId = facility1.id;
-                await controllerUnderTest.bulkCreate(templatesData, {
+                guestsData[0].facilityId = facility1.id;
+                guestsData[1].facilityId = facility1.id;
+                await Guest.bulkCreate(guestsData, {
                     validate: true
                 });
-                let count = await(controllerUnderTest.count({}));
+                let count = await Guest.count({});
                 expect(count).to.equal(2);
 
-                let templatesResult = await controllerUnderTest.findAll("Emergency");
-                expect(templatesResult.length).to.equal(1);
+                let guestsResult = await controllerUnderTest.findAll("rubble");
+                expect(guestsResult.length).to.equal(1);
 
             });
 
             it.skip("should find zero objects by mismatch", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let templatesData = [
-                    dataset.template1Full,
-                    dataset.template2Full
+                let guestsData = [
+                    dataset.guest1Full,
+                    dataset.guest2Full
                 ];
-                templatesData[0].facilityId = facility1.id;
-                templatesData[1].facilityId = facility1.id;
-                await controllerUnderTest.bulkCreate(templatesData, {
+                guestsData[0].facilityId = facility1.id;
+                guestsData[1].facilityId = facility1.id;
+                await Guest.bulkCreate(guestsData, {
                     validate: true
                 });
-                let count = await(controllerUnderTest.count({}));
+                let count = await Guest.count({});
                 expect(count).to.equal(2);
 
-                let templatesResult = await controllerUnderTest.findAll("foo");
-                expect(templatesResult.length).to.equal(0);
+                let guestsResult = await controllerUnderTest.findAll("foo");
+                expect(guestsResult.length).to.equal(0);
 
             });
 
@@ -249,15 +247,16 @@ describe('Template Controller Tests', () => {
             it("should find one object by valid id", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
-                let template1 = await Template.create(template1Data);
+                guest1Data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1Data);
 
-                let result1 = await controllerUnderTest.findOne(template1.id);
+                let result1 = await controllerUnderTest.findOne(guest1.id);
                 expect(result1).is.not.null;
-                expect(result1.name).is.equal(dataset.template1Full.name);
+                expect(result1.firstName).is.equal(dataset.guest1Full.firstName);
+                expect(result1.lastName).is.equal(dataset.guest1Full.lastName);
 
             });
 
@@ -268,7 +267,7 @@ describe('Template Controller Tests', () => {
                     await controllerUnderTest.findOne(id);
                     expect.fail("Should have thrown not found error");
                 } catch (err) {
-                    let expected = "id: Missing Template " + id;
+                    let expected = "id: Missing Guest " + id;
                     expect(err.message).includes(expected);
                 }
 
@@ -285,18 +284,19 @@ describe('Template Controller Tests', () => {
             it("should cause validation error", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
-                let template1 = await Template.create(template1Data);
+                guest1Data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1Data);
 
                 try {
-                    await controllerUnderTest.insert(template1Data);
+                    await controllerUnderTest.insert(guest1Data);
                     expect.fail("Should have thrown validation error");
                 } catch (err) {
                     expect(err.message).includes("Name '" +
-                        template1.name + "' is already in use");
+                        guest1.firstName + " " + guest1.lastName +
+                        "' is already in use");
                 }
 
             });
@@ -308,14 +308,14 @@ describe('Template Controller Tests', () => {
             it("should cause validation error", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
-                delete template1Data.name;
+                guest1Data.facilityId = facility1.id;
+                delete guest1Data.firstName;
 
                 try {
-                    await controllerUnderTest.insert(template1Data);
+                    await controllerUnderTest.insert(guest1Data);
                     expect.fail("Should have thrown validation error");
                 } catch (err) {
                     expect(err.message).includes("cannot be null");
@@ -330,13 +330,14 @@ describe('Template Controller Tests', () => {
             it("should add one full object", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
+                guest1Data.facilityId = facility1.id;
 
-                let template1 = await controllerUnderTest.insert(template1Data);
-                expect(template1.name).to.equal(template1Data.name);
+                let guest1 = await controllerUnderTest.insert(guest1Data);
+                expect(guest1.firstName).to.equal(guest1Data.firstName);
+                expect(guest1.lastName).to.equal(guest1Data.lastName);
 
             });
 
@@ -351,27 +352,31 @@ describe('Template Controller Tests', () => {
             it("should fail trying to change name to one already in use", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
-                let template1 = await Template.create(template1Data);
-                expect(template1.name).to.equal(template1Data.name);
+                guest1Data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1Data);
+                expect(guest1.firstName).to.equal(guest1Data.firstName);
+                expect(guest1.lastName).to.equal(guest1Data.lastName);
 
-                let template2Data = {
-                    ...dataset.template2Full
+                let guest2Data = {
+                    ...dataset.guest2Full
                 };
-                template2Data.facilityId = facility1.id;
-                let template2 = await Template.create(template2Data);
-                expect(template2.name).to.equal(template2Data.name);
+                guest2Data.facilityId = facility1.id;
+                let guest2 = await Guest.create(guest2Data);
+                expect(guest2.firstName).to.equal(guest2Data.firstName);
+                expect(guest2.lastName).to.equal(guest2Data.lastName);
 
-                template2.name = template1.name;
+                guest2.firstName = guest1.firstName;
+                guest2.lastName = guest1.lastName;
                 try {
-                    await controllerUnderTest.update(template2.id, template2.dataValues);
+                    await controllerUnderTest.update(guest2.id, guest2.dataValues);
                     expect.fail("Should have thrown already in use exception");
                 } catch (err) {
                     expect(err.message).includes("Name '" +
-                        dataset.template1Full.name + "' is already in use");
+                        dataset.guest1Full.firstName + " " +
+                        dataset.guest1Full.lastName + "' is already in use");
                 }
 
             });
@@ -379,15 +384,16 @@ describe('Template Controller Tests', () => {
             it("should update one full object", async () => {
 
                 let facility1 = await Facility.create(dataset.facility1full);
-                let template1Data = {
-                    ...dataset.template1Full
+                let guest1Data = {
+                    ...dataset.guest1Full
                 };
-                template1Data.facilityId = facility1.id;
-                let template1 = await Template.create(template1Data);
-                expect(template1.name).to.equal(template1Data.name);
+                guest1Data.facilityId = facility1.id;
+                let guest1 = await Guest.create(guest1Data);
+                expect(guest1.firstName).to.equal(guest1Data.firstName);
+                expect(guest1.lastName).to.equal(guest1Data.lastName);
 
-                template1.name = template1Data.name + " Updated";
-                await controllerUnderTest.update(template1.id, template1.dataValues);
+                guest1.firstName = guest1Data.firstName + " Updated";
+                await controllerUnderTest.update(guest1.id, guest1.dataValues);
 
             });
 
