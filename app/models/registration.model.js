@@ -84,8 +84,16 @@ module.exports = (sequelize) => {
 
         paymentType: {
             allowNull: true,
-            type: DataTypes.ENUM("$$", "AG", "CT", "FM", "MM"),
+            type: DataTypes.ENUM("$$", "AG", "CT", "FM", "MM", "SW"),
         },
+/*
+    $$ - Paid cash
+    AG - Agency voucher
+    CT - CityTeam
+    FM - ?
+    MM - Medical mat
+    SW - Severe weather
+ */
 
         registrationDate: {
             allowNull: false,

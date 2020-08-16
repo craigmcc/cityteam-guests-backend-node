@@ -5,6 +5,7 @@
   "main": "backend.js",
   "scripts": {
     "converage": "NODE_ENV=development nyc npm run test",
+    "import": "NODE_ENV=production node import.shelter.log",
     "start": "NODE_ENV=production node backend",
     "test": "NODE_ENV=development mocha"
   },
@@ -14,6 +15,7 @@
     "@wesleytodd/openapi": "^0.1.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "csv-parser": "^2.3.3",
     "express": "^4.17.1",
     "pg": "^8.3.0",
     "pg-hstore": "^2.3.3",

@@ -14,7 +14,8 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configure openapi support
+/*
+// Configure openapi support (npm install @wesleytodd/openapi)
 const openapi = require('@wesleytodd/openapi')
 const oapi = openapi({
       openapi: '3.0.0',
@@ -26,6 +27,7 @@ const oapi = openapi({
 app.use(oapi)
 app.use('/openapi-ui', oapi.redoc)
 //app.use('/openapi-ui', oapi.swaggerui)
+*/
 
 // Configure database and models
 const db = require("./app/models");
@@ -36,25 +38,31 @@ db.sequelize.sync();
 // });
 
 // Simple route for "Hello, World" message
-app.get("/", oapi.path({
-    description: 'Hello, World! message',
-    responses: {
-        200: {
-            description: 'Successful response',
-            content: {
-                'application/json': {
-                    schema: {
-                        type: 'object',
-                        properties: {
-                            message: { type: 'string' }
+app.get("/", (req, res) => {
+
+    /*
+    app.get("/", oapi.path({
+        description: 'Hello, World! message',
+        responses: {
+            200: {
+                description: 'Successful response',
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                            properties: {
+                                message: { type: 'string' }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}), (req, res) => {
+    }), (req, res) => {
+    */
+
     res.json({ message: "Welcome to CityTeam Guests - Backend Application." });
+
 });
 
 // Define routes for each model

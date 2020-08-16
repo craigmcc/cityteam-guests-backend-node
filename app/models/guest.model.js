@@ -17,6 +17,7 @@ module.exports = (sequelize) => {
 
         facilityId: {
             allowNull: false,
+            field: "facility_id",
             type: DataTypes.INTEGER,
             unique: "uniqueNameWithinFacility",
             validate: {
@@ -36,12 +37,14 @@ module.exports = (sequelize) => {
 
         firstName: {
             allowNull: false,
+            field: "first_name",
             type: DataTypes.STRING,
             unique: "uniqueNameWithinFacility",
         },
 
         lastName: {
             allowNull: false,
+            field: "last_name",
             type: DataTypes.STRING,
             unique: "uniqueNameWithinFacility",
         }
